@@ -10,8 +10,8 @@ import { ProblemDetailException } from './problem-detail.exception';
 export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
   constructor(protected urlResolver?: ProblemDetailTypeUrlResolver) {}
 
-  private getTypeUrlForCode = (code: number) => {
-    if (this.urlResolver) return this.urlResolver(code);
+  private getTypeUrlForCode = (code: number, title: string) => {
+    if (this.urlResolver) return this.urlResolver(code, title);
     return `https://httpstatuses.com/${code}`;
   };
 
@@ -27,8 +27,9 @@ export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
       .getResponse()
       .status(e.getStatus())
       .header('Content-Type', 'application/problem+json')
-      .json({
-        type: type || this.getTypeUrlForCode(e.getStatus()),
+      .send({
+        status: e.getStatus(),
+        type: type || this.getTypeUrlForCode(e.getStatus(), title),
         title,
         detail,
         instance: instance || host.switchToHttp().getRequest().url,
@@ -36,34 +37,41 @@ export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
       });
   };
 
-  private handleHttpException = (e: HttpException, host: ArgumentsHost) =>
+  private handleHttpException = (e: HttpException, host: ArgumentsHost) => {
+    const title = e.name
+      .replace('Exception', '')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .trim();
+
     host
       .switchToHttp()
       .getResponse()
       .status(e.getStatus())
       .header('Content-Type', 'application/problem+json')
-      .json({
-        type: this.getTypeUrlForCode(e.getStatus()),
-        title: e.name
-          .replace('Exception', '')
-          .replace(/([a-z])([A-Z])/g, '$1 $2')
-          .trim(),
+      .send({
+        status: e.getStatus(),
+        type: this.getTypeUrlForCode(e.getStatus(), title),
+        title,
         detail: e.message,
         instance: host.switchToHttp().getRequest().url,
       });
+  };
 
-  private handleRawError = (e: Error, host: ArgumentsHost) =>
+  private handleRawError = (e: Error, host: ArgumentsHost) => {
+    const title = 'Internal Server Error';
     host
       .switchToHttp()
       .getResponse()
       .status(500)
-      .setHeader('Content-Type', 'application/problem+json')
-      .json({
-        type: this.getTypeUrlForCode(500),
-        title: 'Internal Server Error',
+      .header('Content-Type', 'application/problem+json')
+      .send({
+        status: 500,
+        type: this.getTypeUrlForCode(500, title),
+        title,
         detail: e.message,
         instance: host.switchToHttp().getRequest().url,
       });
+  };
 
   catch(exception: Error, host: ArgumentsHost) {
     if (exception instanceof ProblemDetailException)
@@ -76,4 +84,7 @@ export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
   }
 }
 
-export type ProblemDetailTypeUrlResolver = (code: number) => string;
+export type ProblemDetailTypeUrlResolver = (
+  code: number,
+  title: string,
+) => string;

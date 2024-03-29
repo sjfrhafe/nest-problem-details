@@ -1,10 +1,21 @@
 {
-  "name": "nest-probmlem-details",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "name": "@sjfrhafe/nest-problem-details",
+  "version": "0.0.6",
+  "description": "Provides rfc9457 logic for NestJS",
+  "author": "sjfrhafe",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sjfrhafe/nest-problem-details"
+  },
+  "keywords": [
+    "nestjs",
+    "problem-details",
+    "rfc7807", 
+    "rfc9457"
+  ],
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"libs/**/*.ts\"",
@@ -18,8 +29,8 @@
     "@nestjs/common": ">=8.0.0"
   },
   "devDependencies": {
-    "@nestjs/platform-express": "^10.0.0",
     "@nestjs/cli": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
     "@types/express": "^4.17.17",
@@ -57,5 +68,8 @@
       "@sjfrhafe/nest-problem-details/(.*)": "<rootDir>/src/$1",
       "@sjfrhafe/nest-problem-details": "<rootDir>/src"
     }
+  },
+  "dependencies": {
+    "@nestjs/platform-fastify": "^10.3.7"
   }
 }

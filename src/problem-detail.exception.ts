@@ -1,6 +1,6 @@
 import { HttpException } from '@nestjs/common';
 
-type ProblemDetailBaseConfig = {
+type ProblemDetailBase = {
   type?: string;
   title: string;
   detail: string;
@@ -12,14 +12,14 @@ type AdditionalProperties = Record<
   string | number | string[] | number[]
 >;
 
-type ProblemDetailConfig = ProblemDetailBaseConfig & AdditionalProperties;
+export type ProblemDetail = ProblemDetailBase & AdditionalProperties;
 
 export class ProblemDetailException extends HttpException {
-  constructor(responseCode: number, args: ProblemDetailConfig) {
+  constructor(responseCode: number, args: ProblemDetail) {
     super(args, responseCode);
   }
 
-  getResponse(): ProblemDetailConfig {
-    return super.getResponse() as ProblemDetailConfig;
+  getResponse(): ProblemDetail {
+    return super.getResponse() as ProblemDetail;
   }
 }

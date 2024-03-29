@@ -1,73 +1,126 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Nest Problem Details
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This library provides tools to easily use the Problem Details standard for HTTP APIs as specified in [rfc9457](https://datatracker.ietf.org/doc/html/rfc9457#name-introduction) in NestJS. It provides support for both Express and Fastify.
 
-## Description
+## Functionalties
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Adjustable ProblemDetailsException
+- Converting every thrown error in custom detail format
+- Automatically handling HttpExceptions from `@nestjs/common` like `BadRequestException`
+- Autogenerating type URL
+- Extensible type URL logic
+- Overriding content-type header
+- Express and Fastify support
 
-## Installation
+## Getting started
 
-```bash
-$ npm install
+The heart of the library is the exception filter. It's added to bootstrap method in `main.ts` as a global exception filter.
+
+```js
+//...
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.useGlobalFilters(new ProblemDetailFilter());
+
+  await app.listen(3000);
+}
+//...
 ```
 
-## Running the app
+Each error thrown is now returned in problem details formatting.
 
-```bash
-# development
-$ npm run start
+### ProblemDetailException (auto type and instance)
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```js
+throw new ProblemDetailException(403, {
+  title: 'Forbidden',
+  detail: 'You are not allowed to access this resource',
+});
 ```
 
-## Test
+results in
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```json
+{
+  "type": "https://httpstatuses.com/403",
+  "title": "Forbidden",
+  "detail": "You are not allowed to access this resource",
+  "instance": "cat/sam"
+}
 ```
 
-## Support
+### ProblemDetailException (additional custom args)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```js
+throw new ProblemDetailException(401, {
+  type: 'https://example.com/errors/auth',
+  title: 'JWT Expired',
+  detail: `The provided JWT expired ${expired} minutes ago`,
+  instance: 'profile/me',
+  customHint: 'try to refresh you token',
+});
+```
 
-## Stay in touch
+results in
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```json
+{
+  "type": "https://example.com/errors/auth",
+  "title": "JWT Expired",
+  "detail": "The provided JWT expired 4 minutes ago",
+  "instance": "profile/me",
+  "customHint": "try to refresh your token"
+}
+```
 
-## License
+### NestJS HttpExceptions
 
-Nest is [MIT licensed](LICENSE).
+```js
+new BadRequestException('some error');
+```
+
+results in
+
+```json
+{
+  "type": "https://httpstatuses.com/400",
+  "title": "Bad Request",
+  "detail": "some error",
+  "instance": "/"
+}
+```
+
+### Raw Errors
+
+```js
+new Error('some error');
+```
+
+results in
+
+```json
+{
+  "type": "https://httpstatuses.com/500",
+  "title": "Internal Server Error",
+  "detail": "some error",
+  "instance": "/"
+}
+```
+
+## Customize auto type generation
+
+You can customize the auto generated type url by providing a `ProblemDetailTypeUrlResolver`.
+
+```ts
+const typeUrlResolver = (code: number, title: string) =>
+  `https://example.com/errors/${code}`;
+
+app.useGlobalFilters(new TestProblemDetailFilter(typeUrlResolver));
+```
+
+## Disclaimer
+
+This open-source library is provided as-is, without any express or implied warranties. The author(s) of this library shall not be held responsible for any direct, indirect, incidental, special, exemplary, or consequential damages arising from the use of this library, including but not limited to, procurement of substitute goods or services, loss of use, data, or profits, or business interruption. Users are encouraged to thoroughly test the library in their own environments and use it at their own risk. Additionally, it is recommended to review the license and terms of use associated with this library before incorporating it into any projects.

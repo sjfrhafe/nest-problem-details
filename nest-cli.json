@@ -5,7 +5,7 @@
   "type": "library",
   "entryFile": "index",
   "compilerOptions": {
-    "deleteOutDir": true,
-    "webpack": true
+    "deleteOutDir": false,
+    "webpack": false
   }
 }

@@ -7,6 +7,10 @@ import {
 import * as request from 'supertest';
 import { TestController } from './test.controller';
 import { TestService } from './test.service';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 
 const urlResolver = (code: number, title: string) =>
   `[customurl]/${code}/${title}`;
@@ -29,9 +33,13 @@ describe('AppController (e2e)', () => {
       providers: [TestService],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleFixture.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter(),
+    );
+
     app.useGlobalFilters(problemDetailFilter);
     await app.init();
+    await app.getHttpAdapter().getInstance().ready();
   });
 
   afterAll(async () => {
