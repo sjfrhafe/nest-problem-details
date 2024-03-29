@@ -1,6 +1,6 @@
 {
   "name": "@sjfrhafe/nest-problem-details",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "Provides rfc9457 logic for NestJS",
   "author": "sjfrhafe",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "keywords": [
     "nestjs",
     "problem-details",
-    "rfc7807", 
+    "rfc7807",
     "rfc9457"
   ],
   "scripts": {
