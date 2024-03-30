@@ -77,6 +77,40 @@ results in
 }
 ```
 
+### Validation Pipe BadRequestExceptions
+
+`test.dto.ts`
+
+```js
+import { IsString } from 'class-validator';
+
+export class TestDto {
+  @IsString()
+  name: string;
+}
+```
+
+`test.controller.ts`
+
+```js
+@Post()
+  postHello(@Body() dto: TestDto): string {
+    //do something with dto
+  }
+```
+
+results in
+
+```json
+{
+  "status": 400,
+  "type": "https://httpstatuses.com/400",
+  "title": "Bad Request",
+  "detail": "name must be a string",
+  "instance": "/"
+}
+```
+
 ### NestJS HttpExceptions
 
 ```js
