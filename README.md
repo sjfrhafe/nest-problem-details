@@ -9,6 +9,7 @@ This library provides tools to easily use the Problem Details standard for HTTP 
 - Adjustable ProblemDetailsException
 - Converting every thrown error in custom detail format
 - Automatically handling HttpExceptions from `@nestjs/common` like `BadRequestException`
+- Validation Pipe support
 - Autogenerating type URL
 - Extensible type URL logic
 - Overriding content-type header

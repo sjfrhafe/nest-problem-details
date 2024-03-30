@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
@@ -34,6 +35,32 @@ export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
         detail,
         instance: instance || host.switchToHttp().getRequest().url,
         ...additionalProperties,
+      });
+  };
+
+  private handleBadRequestException = (
+    e: BadRequestException,
+    host: ArgumentsHost,
+  ) => {
+    const title = e.name
+      .replace('Exception', '')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .trim();
+
+    const message = (e.getResponse() as any).message;
+    const detail = Array.isArray(message) ? message[0] : message;
+
+    host
+      .switchToHttp()
+      .getResponse()
+      .status(e.getStatus())
+      .header('Content-Type', 'application/problem+json')
+      .send({
+        status: e.getStatus(),
+        type: this.getTypeUrlForCode(e.getStatus(), title),
+        title,
+        detail,
+        instance: host.switchToHttp().getRequest().url,
       });
   };
 
@@ -76,6 +103,9 @@ export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
   catch(exception: Error, host: ArgumentsHost) {
     if (exception instanceof ProblemDetailException)
       return this.handleProblemDetail(exception, host);
+
+    if (exception instanceof BadRequestException)
+      return this.handleBadRequestException(exception, host);
 
     if (exception instanceof HttpException)
       return this.handleHttpException(exception, host);

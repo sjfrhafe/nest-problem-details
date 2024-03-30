@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   ProblemDetailFilter,
@@ -31,6 +31,7 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalFilters(problemDetailFilter);
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
 
@@ -140,6 +141,21 @@ describe('AppController (e2e)', () => {
         title: 'Internal Server Error',
         detail: 'something went wrong in service',
         instance: '/test/error-in-service',
+      });
+  });
+
+  it('should handle validation error', async () => {
+    await request(app.getHttpServer())
+      .post('/test/validation-error')
+      .send({ name: 123 })
+      .expect(400)
+      .expect('Content-Type', 'application/problem+json; charset=utf-8')
+      .expect({
+        status: 400,
+        type: '[customurl]/400/Bad Request',
+        title: 'Bad Request',
+        detail: 'name must be a string',
+        instance: '/test/validation-error',
       });
   });
 

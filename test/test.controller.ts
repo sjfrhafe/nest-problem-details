@@ -1,11 +1,14 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   NotFoundException,
+  Post,
 } from '@nestjs/common';
 import { TestService } from './test.service';
 import { ProblemDetailException } from '@sjfrhafe/nest-problem-details';
+import { TestDto } from './test.dto';
 
 @Controller('test')
 export class TestController {
@@ -52,5 +55,10 @@ export class TestController {
   @Get('error-in-service')
   getErrorInService() {
     return this.testService.doError();
+  }
+
+  @Post('validation-error')
+  postDto(@Body() dto: TestDto) {
+    return dto;
   }
 }
