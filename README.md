@@ -46,6 +46,7 @@ results in
 
 ```json
 {
+  "status": 403,
   "type": "https://httpstatuses.com/403",
   "title": "Forbidden",
   "detail": "You are not allowed to access this resource",
@@ -69,6 +70,7 @@ results in
 
 ```json
 {
+  "status": 401,
   "type": "https://example.com/errors/auth",
   "title": "JWT Expired",
   "detail": "The provided JWT expired 4 minutes ago",
@@ -121,6 +123,7 @@ results in
 
 ```json
 {
+  "status": 400,
   "type": "https://httpstatuses.com/400",
   "title": "Bad Request",
   "detail": "some error",
@@ -138,6 +141,7 @@ results in
 
 ```json
 {
+  "status": 500,
   "type": "https://httpstatuses.com/500",
   "title": "Internal Server Error",
   "detail": "some error",
