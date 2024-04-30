@@ -1,6 +1,6 @@
 {
   "name": "@sjfrhafe/nest-problem-details",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Provides rfc9457 logic for NestJS",
   "author": "sjfrhafe",
   "license": "MIT",
