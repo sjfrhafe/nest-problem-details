@@ -14,6 +14,7 @@ This library provides tools to easily use the Problem Details standard for HTTP 
 - Extensible type URL logic
 - Overriding content-type header
 - Express and Fastify support
+- Custom Logger Support
 
 ## Getting started
 
