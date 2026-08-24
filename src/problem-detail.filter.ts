@@ -65,7 +65,13 @@ export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .trim();
 
-    const message = (e.getResponse() as any).message;
+    const exceptionResponse = e.getResponse();
+    const message =
+      typeof exceptionResponse === 'object' &&
+      exceptionResponse !== null &&
+      'message' in exceptionResponse
+        ? exceptionResponse.message
+        : e.message;
     const detail = Array.isArray(message) ? message[0] : message;
 
     const response = {
@@ -132,6 +138,17 @@ export class ProblemDetailFilter implements ExceptionFilter<HttpException> {
   };
 
   catch(exception: Error, host: ArgumentsHost) {
+    if (host.getType() !== 'http') {
+      const title = 'Internal Server Error';
+
+      return this.logError({
+        status: 500,
+        type: this.getTypeUrlForCode(500, title),
+        title,
+        detail: exception.message,
+      });
+    }
+
     if (exception instanceof ProblemDetailException)
       return this.handleProblemDetail(exception, host);
 
